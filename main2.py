@@ -21,6 +21,9 @@ var_negativo = None
 var_brillo_canal_rojo = None
 var_brillo_canal_verde = None
 var_brillo_canal_azul = None
+var_gris_promedio = None
+var_gris_midgray = None
+var_gris_luminosidad = None 
 ###############Funciones#############################
 
 def mostrar_en_etiqueta(arreglo):
@@ -155,7 +158,38 @@ def aplicar_brillo_capa_azul():
 
     mostrar_en_etiqueta(resultado)
 
+def aplicar_grises():
+    if imagen_Original is None:
+        messagebox.showwarning("error de imagen",  "No has seleccionado la imagen")
 
+    alguna_activa = False
+
+    if var_gris_promedio.get():
+        arreglo = np.array(imagen_Original)
+        resultado = imglib.aplicar_gris_promedio(arreglo)
+        alguna_activa = True
+    
+
+    if var_gris_midgray.get():
+        arreglo = np.array(imagen_Original)
+        resultado = imglib.aplicar_gris_midgray(arreglo)
+        alguna_activa = True
+
+   
+
+    if var_gris_luminosidad.get():
+        arreglo = np.array(imagen_Original)
+        resultado = imglib.aplicar_gris_luminosidad(arreglo)
+        alguna_activa = True
+
+    else:
+        arreglo = np.array(imagen_Original)
+
+    if not alguna_activa:
+        resultado = arreglo
+        
+
+    mostrar_en_etiqueta(resultado)
 ############PANELES#########################
 
 def cambiar_categoria(evento):
@@ -169,6 +203,9 @@ def cambiar_categoria(evento):
 
     elif seleccion == "Brillo":
         construir_panel_brillo()
+
+    elif seleccion == "Escala de Grises":
+        construir_panel_grises()
 
 
     else:
@@ -198,7 +235,7 @@ def construir_panel_colores():
         frame_controles,
         text= "Seleccionar Canal",
         justify= "center",
-        font=("arial",12, "bold"),
+        font=("arial",16, "bold"),
         fg= "white",
         bg="black"
     ).pack(anchor="w", pady=(0,5))
@@ -208,6 +245,7 @@ def construir_panel_colores():
         text= "Capa Roja",
         variable= var_rojo,
         command= aplicar_capas,
+        font= ("arial", 12),
         bg= "black",
         fg= "red",
         selectcolor="black"
@@ -218,6 +256,7 @@ def construir_panel_colores():
         text= "Capa Verde",
         variable= var_verde,
         command= aplicar_capas,
+        font= ("arial", 12),
         bg="black",
         fg="green",
         selectcolor= "black"
@@ -229,6 +268,7 @@ def construir_panel_colores():
         text= "Capa Azul",
         variable= var_azul,
         command= aplicar_capas,
+        font= ("arial", 12),
         bg= "black",
         fg="blue",
         selectcolor="black",
@@ -239,30 +279,33 @@ def construir_panel_colores():
         text= "capa Amarilla",
         variable= var_amarillo,
         command= aplicar_capas,
+        font= ("arial", 12),
         bg="black",
         fg="yellow",
         selectcolor= "black"
     ).pack(anchor="w")
 
     tk.Checkbutton(
-            frame_controles,
-            text= "capa Celeste",
-            variable= var_celeste,
-            command= aplicar_capas,
-            bg="black",
-            fg="light blue",
-            selectcolor= "black"
-        ).pack(anchor="w")
+        frame_controles,
+        text= "capa Celeste",
+        variable= var_celeste,
+        command= aplicar_capas,
+        font= ("arial", 12),
+        bg="black",
+        fg="light blue",
+        selectcolor= "black"
+    ).pack(anchor="w")
 
     tk.Checkbutton(
-            frame_controles,
-            text= "capa Morada",
-            variable= var_morado,
-            command= aplicar_capas,
-            bg="black",
-            fg="purple",
-            selectcolor= "black"
-        ).pack(anchor="w")
+        frame_controles,
+        text= "capa Morada",
+        variable= var_morado,
+        command= aplicar_capas,
+        font= ("arial", 12),
+        bg="black",
+        fg="purple",
+        selectcolor= "black"
+    ).pack(anchor="w")
 
     tk.Frame(
         frame_controles, 
@@ -271,14 +314,15 @@ def construir_panel_colores():
     ).pack(fill="x", pady=10)
 
     tk.Checkbutton(
-            frame_controles,
-            text= "capa Negativa",
-            variable= var_negativo,
-            command= aplicar_negativo,
-            bg="black",
-            fg="white",
-            selectcolor= "black"
-        ).pack(anchor="w")
+        frame_controles,
+        text= "capa Negativa",
+        variable= var_negativo,
+        command= aplicar_negativo,
+        font= ("arial", 12),
+        bg="black",
+        fg="white",
+        selectcolor= "black"
+    ).pack(anchor="w")
 
 ########################## PANEL DE BRILLO ###############################################
 
@@ -290,7 +334,7 @@ def construir_panel_brillo():
     tk.Label(
         frame_controles,
         text= "Brillo",
-        fg= "white",
+        fg= "silver",
         bg= "black",
         font= ("arial", 12, "bold")
     ).pack(anchor="w", pady=(0,5))
@@ -318,7 +362,7 @@ def construir_panel_brillo_canal_rojo():
     tk.Label(
         frame_controles,
         text= "Brillo Capa Roja",
-        fg= "white",
+        fg= "red",
         bg= "black",
         font= ("arial", 12, "bold")
     ).pack(anchor="w", pady=(0,5))
@@ -335,9 +379,6 @@ def construir_panel_brillo_canal_rojo():
     
     ).pack(fill= "x")
 
-    
-    
-
 def construir_panel_brillo_canal_verde():
     global var_brillo_canal_verde
     if var_brillo_canal_verde is None:
@@ -346,7 +387,7 @@ def construir_panel_brillo_canal_verde():
     tk.Label(
         frame_controles,
         text= "Brillo Capa verde",
-        fg= "white",
+        fg= "green",
         bg= "black",
         font= ("arial", 12, "bold")
     ).pack(anchor="w", pady=(0,5))
@@ -371,7 +412,7 @@ def construir_panel_brillo_canal_azul():
     tk.Label(
         frame_controles,
         text= "Brillo Capa azul",
-        fg= "white",
+        fg= "blue",
         bg= "black",
         font= ("arial", 12, "bold")
     ).pack(anchor="w", pady=(0,5))
@@ -391,6 +432,56 @@ def construir_panel_brillo_canal_azul():
 
 ####################### PANEL ESCALA DE GRISES ##############################################################
 
+def construir_panel_grises():
+
+    global var_gris_promedio, var_gris_midgray, var_gris_luminosidad
+
+    if var_gris_promedio is None:
+        var_gris_promedio = tk.BooleanVar()
+        var_gris_midgray = tk.BooleanVar()
+        var_gris_luminosidad = tk.BooleanVar()
+
+    tk.Label(
+        frame_controles,
+        text= "SELECCIONAR GRIS ",
+        justify= "center",
+        font=("arial",16, "bold"),
+        fg= "white",
+        bg="black"
+    ).pack(anchor="w", pady=(0,5))
+    
+    tk.Checkbutton(
+        frame_controles,
+        text= "Promedio",
+        variable= var_gris_promedio,
+        command= aplicar_grises,
+        font= ("arial", 12),
+        bg= "black",
+        fg= "#F0E68C",
+        selectcolor="black"
+    ).pack(anchor="w")
+
+    tk.Checkbutton(
+        frame_controles,
+        text= "Midgray",
+        variable= var_gris_midgray,
+        command= aplicar_grises,
+        font= ("arial", 12),
+        bg= "black",
+        fg= "#D3D3D3",
+        selectcolor="black"
+    ).pack(anchor="w")
+
+    tk.Checkbutton(
+        frame_controles,
+        text= "Luminosidad",
+        variable= var_gris_luminosidad,
+        font= ("arial", 12),
+        command= aplicar_grises,
+        bg= "black",
+        fg= "#90EE90",
+        selectcolor="black"
+    ).pack(anchor="w")
 
 
 

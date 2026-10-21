@@ -91,3 +91,29 @@ def  aplicar_brillo_capa_azul(imagen, valor_brillo):
     img_brillo_azul = img_brillo_azul.astype(np.uint8)
 
     return img_brillo_azul
+
+def aplicar_gris_promedio(imagen):
+    img_gris_promedio = imagen.astype(np.float32)
+    img_gris_promedio = ((img_gris_promedio[:,:,0] + img_gris_promedio[:,:,1] + img_gris_promedio[:,:,2])/3).astype(np.uint8)
+    return img_gris_promedio
+
+def aplicar_gris_midgray(imagen):
+    img_gris_midgray = imagen.astype(np.float32)
+
+    mx = np.max(imagen, axis= 2)
+    mn = np.min(imagen, axis= 2)
+
+    img_gris_midgray = (mx + mn) / 2
+
+    img_gris_midgray = np.clip(img_gris_midgray, 0, 255).astype(np.uint8)
+
+    return img_gris_midgray
+
+def aplicar_gris_luminosidad(imagen):
+    img_luminosa = imagen.astype(np.float32)
+
+    img_luminosa = 0.299*imagen[:,:,0] + 0.587*imagen[:,:,1] + 0.114*imagen[:,:,2]
+
+    img_luminosa = np.clip(img_luminosa, 0, 255).astype(np.uint8)
+    
+    return img_luminosa
