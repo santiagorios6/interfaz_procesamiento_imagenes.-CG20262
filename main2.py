@@ -9,6 +9,7 @@ import imglib
 #variables Globales
 
 imagen_Original = None
+imagen_superpocicion = None
 
 var_verde = None
 var_azul = None
@@ -24,6 +25,8 @@ var_brillo_canal_azul = None
 var_gris_promedio = None
 var_gris_midgray = None
 var_gris_luminosidad = None 
+var_umbral = None
+
 ###############Funciones#############################
 
 def mostrar_en_etiqueta(arreglo):
@@ -32,6 +35,7 @@ def mostrar_en_etiqueta(arreglo):
     imagen_tk = ImageTk.PhotoImage(img_mostrar)
     etiqueta_imagen.config(image=imagen_tk)
     etiqueta_imagen.image = imagen_tk
+
 
 def abrir_imagen():
 
@@ -55,6 +59,29 @@ def abrir_imagen():
         #mostrar Imagen
         etiqueta_imagen.config(image= imagen_tk)
         etiqueta_imagen.image = imagen_tk
+
+
+def abrir_imagen_sobrepocicion():
+    global imagen_superpocicion
+    ruta = filedialog.askopenfilename(
+            title= "Seleccione la imagen",
+            filetypes=[("archivos de Imagen", "*.png *.jpg *.jpeg")]
+    )
+
+    if ruta: 
+        imagen_superpocicion = Image.open(ruta)
+        imagen_numpy = np.array(imagen_superpocicion)
+        messagebox.showinfo("Exito", "Imagen cargada correctamente")
+
+        img_mostrar = imagen_Original.resize((300,400))
+        
+        #Conversion a formato compatible
+        imagen_tk = ImageTk.PhotoImage(img_mostrar)
+        
+        #mostrar Imagen
+        etiqueta_imagen.config(image= imagen_tk)
+        etiqueta_imagen.image = imagen_tk
+
 
 def aplicar_capas():
     if imagen_Original is None:
@@ -98,6 +125,7 @@ def aplicar_capas():
 
     mostrar_en_etiqueta(resultado)
 
+
 def aplicar_negativo():
     if imagen_Original is None:
         messagebox.showwarning("error de imagen", "No ha seleccinado la Imagen")
@@ -128,6 +156,7 @@ def aplicar_brillo():
 
     mostrar_en_etiqueta(resultado)
 
+
 def aplicar_brillo_capa_roja():
     if imagen_Original is None:
         messagebox.showwarning("error de imagen", "No ha seleccinado la Imagen")
@@ -137,6 +166,7 @@ def aplicar_brillo_capa_roja():
     resultado = imglib.aplicar_brillo_capa_roja(arreglo, var_brillo_canal_rojo.get())
 
     mostrar_en_etiqueta(resultado)
+
 
 def aplicar_brillo_capa_verde():
     if imagen_Original is None:
@@ -148,6 +178,7 @@ def aplicar_brillo_capa_verde():
 
     mostrar_en_etiqueta(resultado)
 
+
 def aplicar_brillo_capa_azul():
     if imagen_Original is None:
         messagebox.showwarning("error de imagen", "No ha seleccinado la Imagen")
@@ -157,6 +188,7 @@ def aplicar_brillo_capa_azul():
     resultado = imglib.aplicar_brillo_capa_azul(arreglo, var_brillo_canal_azul.get())
 
     mostrar_en_etiqueta(resultado)
+
 
 def aplicar_grises():
     if imagen_Original is None:
@@ -187,7 +219,30 @@ def aplicar_grises():
 
     if not alguna_activa:
         resultado = arreglo
-        
+
+
+    mostrar_en_etiqueta(resultado)
+
+
+def aplicar_umbral():
+    if imagen_Original is None:
+        messagebox.showwarning("error de imagen", "No se encontro imagen seleccionada")
+        return 
+
+    arreglo = np.array(imagen_Original)
+    resultado = imglib.aplicar_binarisacion(arreglo, var_umbral.get())
+
+    mostrar_en_etiqueta(resultado)
+
+
+def aplicar_suma():
+    if imagen_Original is None or imagen_superpocicion is None:
+        messagebox.showwarning("Faltan Imagenes", "debes cargar la imagen principal y la imagen a sumar")
+        return
+
+    arreglo_fondo = np.array(imagen_Original)
+    arreglo_sobre = np.array(imagen_superpocicion)
+    resultado = imglib.suma_imagenes(arreglo_fondo, arreglo_sobre)
 
     mostrar_en_etiqueta(resultado)
 ############PANELES#########################
@@ -206,6 +261,9 @@ def cambiar_categoria(evento):
 
     elif seleccion == "Escala de Grises":
         construir_panel_grises()
+
+    elif seleccion == "Suma de Imgenes":
+        construir_panel_sumar()
 
 
     else:
@@ -354,6 +412,7 @@ def construir_panel_brillo():
     construir_panel_brillo_canal_verde()
     construir_panel_brillo_canal_azul()
 
+
 def construir_panel_brillo_canal_rojo():
     global var_brillo_canal_rojo
     if var_brillo_canal_rojo is None:
@@ -379,6 +438,7 @@ def construir_panel_brillo_canal_rojo():
     
     ).pack(fill= "x")
 
+
 def construir_panel_brillo_canal_verde():
     global var_brillo_canal_verde
     if var_brillo_canal_verde is None:
@@ -403,6 +463,7 @@ def construir_panel_brillo_canal_verde():
         highlightbackground= "green",
         
     ).pack(fill= "x")
+
 
 def construir_panel_brillo_canal_azul():
     global var_brillo_canal_azul
@@ -484,7 +545,82 @@ def construir_panel_grises():
     ).pack(anchor="w")
 
 
+    construir_panel_umbral()
 
+
+def construir_panel_umbral():
+    global var_umbral
+
+    if var_umbral is None:
+        var_umbral = tk.DoubleVar(value=0)
+
+   
+
+    tk.Label(
+        frame_controles,
+        text= "Umbralizacion",
+        fg= "white",
+        bg= "black",
+        font= ("arial", 12),
+    ).pack(anchor="w", pady=(0,5))
+
+
+    tk.Scale(
+        frame_controles,
+        from_= 0,
+        to= 255,
+        orient= "horizontal",
+        variable= var_umbral,
+        command= lambda x: aplicar_umbral(),
+        bg= "black",
+        fg= "white",
+        highlightbackground= "gray"
+    ).pack(fill= "x")
+
+
+def construir_panel_sumar():
+
+    tk.Label(
+        frame_controles,
+        text= "Suma de Imagenes",
+        fg= "white",
+        bg= "black",
+        font= ("Arial", 16)
+
+    ).pack(anchor="w", pady=(0,10))
+
+    tk.Label(
+        frame_controles,
+        text="Carga la segunda Imagen",
+        fg="white",
+        bg= "black",
+        font=("arial", 11)
+
+    ).pack(anchor="w", pady=(5,0))
+
+    tk.Button(
+        frame_controles,
+        text="Carga Imagen a Sumar",
+        command= abrir_imagen_sobrepocicion,
+        bg="gray",
+
+    ).pack(fill= "x", pady=(0,15))
+
+    tk.Label(
+        frame_controles,
+        text="2. Aplica la fusión:",
+        fg="silver",
+        bg="black",
+        font=("arial", 11)
+    ).pack(anchor="w", pady=(5, 0))
+
+    tk.Button(
+        frame_controles,
+        text="Sumar Imágenes",
+        command=aplicar_suma,
+        bg="green",
+        fg="white"
+    ).pack(fill="x", pady=5)
 
 
 
@@ -558,7 +694,6 @@ herramientas_desplegables = [
     "Colores",
     "Brillo",
     "Escala de Grises",
-    "Umbralizacion",
     "Suma de Imgenes",
     "Histograma",
     "Geometria"

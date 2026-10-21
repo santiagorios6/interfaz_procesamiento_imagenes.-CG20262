@@ -115,5 +115,16 @@ def aplicar_gris_luminosidad(imagen):
     img_luminosa = 0.299*imagen[:,:,0] + 0.587*imagen[:,:,1] + 0.114*imagen[:,:,2]
 
     img_luminosa = np.clip(img_luminosa, 0, 255).astype(np.uint8)
-    
+
     return img_luminosa
+
+def aplicar_binarisacion(imagen, valor_umbral):
+
+    img = imagen.astype(np.float32)
+    img_bin = 0.299*img[:,:,0] + 0.587*img[:,:,1] + 0.14*img[:,:,2]
+
+    T = valor_umbral
+
+    img_bin = np.where(img_bin >= T, 255, 0).astype(np.uint8)
+
+    return img_bin
