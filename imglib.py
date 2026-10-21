@@ -61,3 +61,33 @@ def aplicar_brillo(imagen, valor_brillo):
     imagen_clip = np.clip(img_brillo + valor_brillo, 0, 255).astype(np.uint8)
 
     return imagen_clip
+
+
+def  aplicar_brillo_capa_roja(imagen, valor_brillo):
+
+    img_brillo_rojo = imagen.astype(np.float32).copy()
+
+    img_brillo_rojo[:,:,0] = np.clip(img_brillo_rojo[:,:,0] + valor_brillo, 0, 255)
+    img_brillo_rojo = img_brillo_rojo.astype(np.uint8)
+
+    return img_brillo_rojo
+
+
+def  aplicar_brillo_capa_verde(imagen, valor_brillo):
+
+    img_brillo_verde = imagen.astype(np.float32).copy()
+
+    img_brillo_verde[:,:,1] = np.clip(img_brillo_verde[:,:,1] + valor_brillo, 0, 255)
+    img_brillo_verde = img_brillo_verde.astype(np.uint8)
+
+    return img_brillo_verde
+
+
+def  aplicar_brillo_capa_azul(imagen, valor_brillo):
+
+    img_brillo_azul = imagen.astype(np.float32).copy()
+
+    img_brillo_azul[:,:,2] = np.clip(img_brillo_azul[:,:,2] + valor_brillo, 0, 255)
+    img_brillo_azul = img_brillo_azul.astype(np.uint8)
+
+    return img_brillo_azul

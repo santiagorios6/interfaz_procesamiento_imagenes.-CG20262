@@ -18,7 +18,9 @@ var_celeste = None
 var_morado = None
 var_brillo = None
 var_negativo = None
-
+var_brillo_canal_rojo = None
+var_brillo_canal_verde = None
+var_brillo_canal_azul = None
 ###############Funciones#############################
 
 def mostrar_en_etiqueta(arreglo):
@@ -123,6 +125,36 @@ def aplicar_brillo():
 
     mostrar_en_etiqueta(resultado)
 
+def aplicar_brillo_capa_roja():
+    if imagen_Original is None:
+        messagebox.showwarning("error de imagen", "No ha seleccinado la Imagen")
+        return
+
+    arreglo = np.array(imagen_Original)
+    resultado = imglib.aplicar_brillo_capa_roja(arreglo, var_brillo_canal_rojo.get())
+
+    mostrar_en_etiqueta(resultado)
+
+def aplicar_brillo_capa_verde():
+    if imagen_Original is None:
+        messagebox.showwarning("error de imagen", "No ha seleccinado la Imagen")
+        return
+
+    arreglo = np.array(imagen_Original)
+    resultado = imglib.aplicar_brillo_capa_verde(arreglo, var_brillo_canal_verde.get())
+
+    mostrar_en_etiqueta(resultado)
+
+def aplicar_brillo_capa_azul():
+    if imagen_Original is None:
+        messagebox.showwarning("error de imagen", "No ha seleccinado la Imagen")
+        return
+
+    arreglo = np.array(imagen_Original)
+    resultado = imglib.aplicar_brillo_capa_azul(arreglo, var_brillo_canal_azul.get())
+
+    mostrar_en_etiqueta(resultado)
+
 
 ############PANELES#########################
 
@@ -138,6 +170,7 @@ def cambiar_categoria(evento):
     elif seleccion == "Brillo":
         construir_panel_brillo()
 
+
     else:
         tk.Label(
             frame_controles,
@@ -147,6 +180,8 @@ def cambiar_categoria(evento):
             font=("arial", 14)
         ).pack(pady=50)
 
+
+############ PANEL DE COLORES ##################################################
 def construir_panel_colores():
     global var_rojo, var_verde, var_azul, var_amarillo, var_celeste, var_morado, var_negativo
 
@@ -245,30 +280,119 @@ def construir_panel_colores():
             selectcolor= "black"
         ).pack(anchor="w")
 
+########################## PANEL DE BRILLO ###############################################
+
 def construir_panel_brillo():
     global var_brillo
     if var_brillo is None:
         var_brillo = tk.DoubleVar(value= 0)
 
     tk.Label(
-    frame_controles,
-    text= "Brillo",
-    fg= "white",
-    bg= "black",
-    font= ("arial", 12, "bold")
+        frame_controles,
+        text= "Brillo",
+        fg= "white",
+        bg= "black",
+        font= ("arial", 12, "bold")
     ).pack(anchor="w", pady=(0,5))
 
     tk.Scale(
-    frame_controles,
-    from_= -100,
-    to= 100,
-    orient= "horizontal",
-    variable= var_brillo,
-    command= lambda x: aplicar_brillo(),
-    bg= "black",
-    highlightbackground= "green",
+        frame_controles,
+        from_= -100,
+        to= 100,
+        orient= "horizontal",
+        variable= var_brillo,
+        command= lambda x: aplicar_brillo(),
+        bg= "black",
+        highlightbackground= "green",
+    ).pack(fill= "x")
 
-).pack(fill= "x")
+    construir_panel_brillo_canal_rojo()
+    construir_panel_brillo_canal_verde()
+    construir_panel_brillo_canal_azul()
+
+def construir_panel_brillo_canal_rojo():
+    global var_brillo_canal_rojo
+    if var_brillo_canal_rojo is None:
+        var_brillo_canal_rojo = tk.DoubleVar (value = 0)
+
+    tk.Label(
+        frame_controles,
+        text= "Brillo Capa Roja",
+        fg= "white",
+        bg= "black",
+        font= ("arial", 12, "bold")
+    ).pack(anchor="w", pady=(0,5))
+    
+    tk.Scale(
+        frame_controles,
+        from_= -100,
+        to= 100,
+        orient= "horizontal",
+        variable= var_brillo_canal_rojo,
+        command= lambda x: aplicar_brillo_capa_roja(),
+        bg= "black",
+        highlightbackground= "green",
+    
+    ).pack(fill= "x")
+
+    
+    
+
+def construir_panel_brillo_canal_verde():
+    global var_brillo_canal_verde
+    if var_brillo_canal_verde is None:
+        var_brillo_canal_verde = tk.DoubleVar (value = 0)
+
+    tk.Label(
+        frame_controles,
+        text= "Brillo Capa verde",
+        fg= "white",
+        bg= "black",
+        font= ("arial", 12, "bold")
+    ).pack(anchor="w", pady=(0,5))
+        
+    tk.Scale(
+        frame_controles,
+        from_= -100,
+        to= 100,
+        orient= "horizontal",
+        variable= var_brillo_canal_verde,
+        command= lambda x: aplicar_brillo_capa_verde(),
+        bg= "black",
+        highlightbackground= "green",
+        
+    ).pack(fill= "x")
+
+def construir_panel_brillo_canal_azul():
+    global var_brillo_canal_azul
+    if var_brillo_canal_azul is None:
+        var_brillo_canal_azul = tk.DoubleVar (value = 0)
+
+    tk.Label(
+        frame_controles,
+        text= "Brillo Capa azul",
+        fg= "white",
+        bg= "black",
+        font= ("arial", 12, "bold")
+    ).pack(anchor="w", pady=(0,5))
+        
+    tk.Scale(
+        frame_controles,
+        from_= -100,
+        to= 100,
+        orient= "horizontal",
+        variable= var_brillo_canal_azul,
+        command= lambda x: aplicar_brillo_capa_azul(),
+        bg= "black",
+        highlightbackground= "green",
+        
+    ).pack(fill= "x")
+
+
+####################### PANEL ESCALA DE GRISES ##############################################################
+
+
+
 
 
 
