@@ -18,16 +18,20 @@ def obtener_capa_azul(imagen):
     return capaB
 
 
-"""def obtener_cmy(imagen):
+def obtener_capa_amarilla(imagen):
+    capaY = np.copy(imagen)
+    capaY[:,:,2] = 0
+    return capaY
 
+def obtener_capa_celeste(imagen):
     capaC = np.copy(imagen)
     capaC[:,:,0] = 0
+    return capaC
 
+def obtener_capa_morada(imagen):
     capaM = np.copy(imagen)
     capaM[:,:,1] = 0
-
-    capaY = np.copy(imagen)
-    capaY[:,:,2] = 0 """
+    return capaM
 
 
 def invertir_color(imagen):

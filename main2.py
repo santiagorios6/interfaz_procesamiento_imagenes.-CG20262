@@ -10,14 +10,23 @@ import imglib
 
 imagen_Original = None
 
+var_verde = None
+var_azul = None
+var_rojo = None
+var_amarillo = None
+var_celeste = None
+var_morado = None
+var_brillo = None
+var_negativo = None
+
+###############Funciones#############################
+
 def mostrar_en_etiqueta(arreglo):
     imagen_resultado = Image.fromarray(arreglo)
     img_mostrar = imagen_resultado.resize((300,400))
     imagen_tk = ImageTk.PhotoImage(img_mostrar)
     etiqueta_imagen.config(image=imagen_tk)
     etiqueta_imagen.image = imagen_tk
-
-###############definiciones#############################
 
 def abrir_imagen():
 
@@ -63,6 +72,18 @@ def aplicar_capas():
         acomulador += imglib.obtener_capa_azul(arreglo)
         alguna_activa = True
 
+    if var_amarillo.get():
+        acomulador += imglib.obtener_capa_amarilla(arreglo)
+        alguna_activa = True
+
+    if var_celeste.get():
+        acomulador += imglib.obtener_capa_celeste(arreglo)
+        alguna_activa = True
+
+    if var_morado.get():
+        acomulador += imglib.obtener_capa_morada(arreglo)
+        alguna_activa = True
+
     if not alguna_activa:
         resultado = arreglo
     else:
@@ -71,6 +92,19 @@ def aplicar_capas():
     resultado = np.clip(resultado, 0, 255).astype(np.uint8)
 
     mostrar_en_etiqueta(resultado)
+
+def aplicar_negativo():
+    if imagen_Original is None:
+        messagebox.showwarning("error de imagen", "No ha seleccinado la Imagen")
+        return
+    if var_negativo.get():
+        arreglo = np.array(imagen_Original)
+        resultado = imglib.invertir_color(arreglo)
+        mostrar_en_etiqueta(resultado)
+
+    else:
+        arreglo = np.array(imagen_Original)
+        mostrar_en_etiqueta(arreglo)
 
 
 def aplicar_brillo():
@@ -90,7 +124,152 @@ def aplicar_brillo():
     mostrar_en_etiqueta(resultado)
 
 
-    
+############PANELES#########################
+
+def cambiar_categoria(evento):
+    seleccion = combo_herramientas.get()
+
+    for widget in frame_controles.winfo_children():
+        widget.destroy()
+
+    if seleccion == "Colores":
+        construir_panel_colores()
+
+    elif seleccion == "Brillo":
+        construir_panel_brillo()
+
+    else:
+        tk.Label(
+            frame_controles,
+            text=f"Categoría: {seleccion}\n(Aquí irán los controles)", 
+            bg="black", 
+            fg="white", 
+            font=("arial", 14)
+        ).pack(pady=50)
+
+def construir_panel_colores():
+    global var_rojo, var_verde, var_azul, var_amarillo, var_celeste, var_morado, var_negativo
+
+    if var_rojo is None:
+        var_rojo = tk.BooleanVar()
+        var_verde = tk.BooleanVar()
+        var_azul = tk.BooleanVar()
+        var_amarillo = tk.BooleanVar()
+        var_celeste = tk.BooleanVar()
+        var_morado = tk.BooleanVar()
+        var_negativo = tk.BooleanVar()
+
+    tk.Label(
+        frame_controles,
+        text= "Seleccionar Canal",
+        justify= "center",
+        font=("arial",12, "bold"),
+        fg= "white",
+        bg="black"
+    ).pack(anchor="w", pady=(0,5))
+
+    tk.Checkbutton(
+        frame_controles,
+        text= "Capa Roja",
+        variable= var_rojo,
+        command= aplicar_capas,
+        bg= "black",
+        fg= "red",
+        selectcolor="black"
+    ).pack(anchor="w")
+
+    tk.Checkbutton(
+        frame_controles,
+        text= "Capa Verde",
+        variable= var_verde,
+        command= aplicar_capas,
+        bg="black",
+        fg="green",
+        selectcolor= "black"
+    ).pack(anchor="w")
+
+
+    tk.Checkbutton(
+        frame_controles,
+        text= "Capa Azul",
+        variable= var_azul,
+        command= aplicar_capas,
+        bg= "black",
+        fg="blue",
+        selectcolor="black",
+    ).pack(anchor="w")
+
+    tk.Checkbutton(
+        frame_controles,
+        text= "capa Amarilla",
+        variable= var_amarillo,
+        command= aplicar_capas,
+        bg="black",
+        fg="yellow",
+        selectcolor= "black"
+    ).pack(anchor="w")
+
+    tk.Checkbutton(
+            frame_controles,
+            text= "capa Celeste",
+            variable= var_celeste,
+            command= aplicar_capas,
+            bg="black",
+            fg="light blue",
+            selectcolor= "black"
+        ).pack(anchor="w")
+
+    tk.Checkbutton(
+            frame_controles,
+            text= "capa Morada",
+            variable= var_morado,
+            command= aplicar_capas,
+            bg="black",
+            fg="purple",
+            selectcolor= "black"
+        ).pack(anchor="w")
+
+    tk.Frame(
+        frame_controles, 
+        height=2, 
+        bg="gray"
+    ).pack(fill="x", pady=10)
+
+    tk.Checkbutton(
+            frame_controles,
+            text= "capa Negativa",
+            variable= var_negativo,
+            command= aplicar_negativo,
+            bg="black",
+            fg="white",
+            selectcolor= "black"
+        ).pack(anchor="w")
+
+def construir_panel_brillo():
+    global var_brillo
+    if var_brillo is None:
+        var_brillo = tk.DoubleVar(value= 0)
+
+    tk.Label(
+    frame_controles,
+    text= "Brillo",
+    fg= "white",
+    bg= "black",
+    font= ("arial", 12, "bold")
+    ).pack(anchor="w", pady=(0,5))
+
+    tk.Scale(
+    frame_controles,
+    from_= -100,
+    to= 100,
+    orient= "horizontal",
+    variable= var_brillo,
+    command= lambda x: aplicar_brillo(),
+    bg= "black",
+    highlightbackground= "green",
+
+).pack(fill= "x")
+
 
 
 
@@ -101,36 +280,55 @@ ventana.title("Copia barata de Photoshop je je je")
 ventana.geometry("1000x650")
 ventana.configure(bg= "black")
 ventana.resizable(True, True)
-#################################
+
+
+############Variables de Color#####################
 var_rojo = tk.BooleanVar()
 var_verde = tk.BooleanVar()
 var_azul = tk.BooleanVar()
-##################################
+var_amarillo = tk.BooleanVar()
+var_celeste = tk.BooleanVar()
+var_morado = tk.BooleanVar()
+var_negativo = tk.BooleanVar()
 var_brillo = tk.DoubleVar(value= 0)
+
+############## PANEL IZQUIERDO #####################
+frame_izquierdo = tk.Frame(
+    ventana,
+    bg= "black"
+)
+frame_izquierdo.pack(side="left", fill="y", padx=10, pady=10)
 
 #Etiqueta de la imagen
 frame_imagen = tk.Frame(
-    ventana,
-    width=300,
+    frame_izquierdo,
+    width=400,
     height=400,
     bg="black",
     highlightbackground="green",
     highlightthickness= 4,
     relief="raised",
 )
-frame_imagen.place(x= 1,y= 1)
-etiqueta_imagen = tk.Label(
-    ventana,
-)
-etiqueta_imagen.place(x= 0, y=0)
+frame_imagen.pack(pady=(0,10))
+frame_imagen.pack_propagate(False)
 
-button = tk.Button(
-    ventana,
+
+etiqueta_imagen = tk.Label(
+    frame_imagen,
+    bg="black"
+)   
+etiqueta_imagen.pack(fill="both",expand=True)
+
+_button_abrir = tk.Button(
+    frame_izquierdo,
     text= "Abrir Imagen",
     bg= "gray",
-    command= abrir_imagen
+    command= abrir_imagen,
+    font= ("arial", 10)
 )
-button.place(x=120, y= 410 )
+_button_abrir.pack(fill="x")
+
+#############PANEL DERECHO#############################
 
 frame_panel = tk.Frame(
     ventana,
@@ -138,7 +336,7 @@ frame_panel = tk.Frame(
     highlightbackground="green",
     highlightthickness= 4,
 )
-frame_panel.place(x=650, y=0, width=340, height=600)
+frame_panel.pack(fill="both", side="right", expand=True, padx=10, pady=10)
 
 
 herramientas_desplegables = [
@@ -162,197 +360,8 @@ frame_controles = tk.Frame(
     frame_panel,
     bg="black"  
 )
-frame_controles.pack(fill = "both", expand = True)
-
-def cambiar_categoria(evento):
-    seleccion = combo_herramientas.get()
-
-    for widget in frame_controles.winfo_children():
-        widget.destroy()
-
-
-    tk.Label(
-        frame_controles,
-        text=f"Categoría: {seleccion}\n(Aquí irán los controles)", 
-        bg="black", 
-        fg="white", 
-        font=("arial", 14)).pack(pady=50)
+frame_controles.pack(fill = "both", expand = True, padx=10, pady=10)
 
 combo_herramientas.bind("<<ComboboxSelected>>", cambiar_categoria)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-"""""
-
-###################### RGB y CMY #######################################
-frame_RGB = tk.Frame(
-    ventana,
-    bg="black",
-    highlightbackground="green",
-    highlightthickness= 4,
-    relief="raised",
-)
-frame_RGB.place(x=310, y=0)
-
-etiqueta_RGB = tk.Label(
-    frame_RGB,
-    text= "Capas RGB y CMY",
-    justify= "center",
-    font=("arial",12, "bold"),
-    fg= "white",
-    bg="black"
-)
-etiqueta_RGB.pack(anchor="center")
-
-check_rojo = tk.Checkbutton(
-    frame_RGB,
-    text= "Capa Roja",
-    variable= var_rojo,
-    command= aplicar_capas,
-    bg= "black",
-    fg= "red",
-    selectcolor="black"
-    
-)
-check_rojo.pack(anchor="w")
-
-check_verde = tk.Checkbutton(
-    frame_RGB,
-    text= "Capa Verde",
-    variable= var_verde,
-    command= aplicar_capas,
-    bg="black",
-    fg="green",
-    selectcolor= "black"
-)
-check_verde.pack(anchor="w")
-
-
-check_azul = tk.Checkbutton(
-    frame_RGB,
-    text= "Capa Azul",
-    variable= var_azul,
-    command= aplicar_capas,
-    bg= "black",
-    fg="blue",
-    selectcolor="black",
-)
-check_azul.pack(anchor="w")
-
-##################### BRILLO ############################
-
-frame_Brillo = tk.Frame(
-    ventana,
-    bg="black",
-    highlightbackground="green",
-    highlightthickness= 4,
-    relief="raised",
-)
-
-frame_Brillo.place(x=700, y=0)
-
-etiqueta_brillo = tk.Label(
-    frame_Brillo,
-    text= "Brillo",
-    fg= "white",
-    bg= "black",
-    font= ("arial", 12, "bold")
-)
-
-etiqueta_brillo.pack(anchor= "center")
-
-
-slider_brillo = tk.Scale(
-    frame_Brillo,
-    from_= -100,
-    to= 100,
-    orient= "horizontal",
-    variable= var_brillo,
-    command= lambda x: aplicar_brillo(),
-    bg= "black",
-    highlightbackground= "green",
-
-)
-
-slider_brillo.pack(padx= 10, pady= 10)
-
-#########################################################
-opciones = ["OPCION A", "OPCION B","OPCION C"]
-
-combo = ttk.Combobox(ventana, values= opciones)
-
-combo.pack()
-
-
-
- 
-"""
-
-
-
-
 
 ventana.mainloop()
