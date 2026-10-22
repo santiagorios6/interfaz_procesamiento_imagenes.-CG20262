@@ -26,6 +26,9 @@ var_gris_promedio = None
 var_gris_midgray = None
 var_gris_luminosidad = None 
 var_umbral = None
+xinicio = None 
+yinicio = None
+rectangulo_id = None
 
 ###############Funciones#############################
 
@@ -33,7 +36,9 @@ def mostrar_en_etiqueta(arreglo):
     imagen_resultado = Image.fromarray(arreglo)
     img_mostrar = imagen_resultado.resize((300,400))
     imagen_tk = ImageTk.PhotoImage(img_mostrar)
-    etiqueta_imagen.config(image=imagen_tk)
+
+    etiqueta_imagen.delete("all")
+    etiqueta_imagen.create_image(200, 200, anchor="center", image= imagen_tk)
     etiqueta_imagen.image = imagen_tk
 
 
@@ -48,18 +53,9 @@ def abrir_imagen():
 
     if ruta:
         imagen_Original = Image.open(ruta)
-        imagen_numpy = np.array(imagen_Original)
-
-        #redimensionamiento de imagen
-        img_mostrar = imagen_Original.resize((300,400))
-
-        #Conversion a formato compatible
-        imagen_tk = ImageTk.PhotoImage(img_mostrar)
-
-        #mostrar Imagen
-        etiqueta_imagen.config(image= imagen_tk)
-        etiqueta_imagen.image = imagen_tk
-
+        arreglo = np.array(imagen_Original)
+        arreglo = imagen_Original.resize((300,400))
+        mostrar_en_etiqueta(arreglo)
 
 def abrir_imagen_sobrepocicion():
     global imagen_superpocicion
@@ -72,15 +68,6 @@ def abrir_imagen_sobrepocicion():
         imagen_superpocicion = Image.open(ruta)
         imagen_numpy = np.array(imagen_superpocicion)
         messagebox.showinfo("Exito", "Imagen cargada correctamente")
-
-        img_mostrar = imagen_Original.resize((300,400))
-        
-        #Conversion a formato compatible
-        imagen_tk = ImageTk.PhotoImage(img_mostrar)
-        
-        #mostrar Imagen
-        etiqueta_imagen.config(image= imagen_tk)
-        etiqueta_imagen.image = imagen_tk
 
 
 def aplicar_capas():
@@ -265,6 +252,9 @@ def cambiar_categoria(evento):
     elif seleccion == "Suma de Imgenes":
         construir_panel_sumar()
 
+    elif seleccion == "Geometria":
+        construir_panel_geometria()
+
 
     else:
         tk.Label(
@@ -275,8 +265,55 @@ def cambiar_categoria(evento):
             font=("arial", 14)
         ).pack(pady=50)
 
+def iniciar_recorte(evento):
+    global xinicio, yinicio, rectangulo_id
 
-############ PANEL DE COLORES ##################################################
+    xinicio = evento.x
+    yinicio = evento.y
+
+    if rectangulo_id is not None:
+        etiqueta_imagen.delete(rectangulo_id)
+
+
+    rectangulo_id = etiqueta_imagen.create_rectangle(
+        xinicio, yinicio, xinicio, yinicio,
+        outline="red", width=2
+    )
+
+
+def actualizar_recorte(evento):
+    global rectangulo_id
+    if rectangulo_id is not None:
+        etiqueta_imagen.coords(rectangulo_id, xinicio, yinicio, evento.x, evento.y)
+
+def finalizar_recorte(evento):
+    global xinicio, yinicio, rectangulo_id
+
+    if xinicio is None or yinicio is None:
+        return
+
+    xfin = evento.x
+    yfin = evento.y
+
+
+    if imagen_Original is not None:
+        ancho_real, alto_real = imagen_Original.size
+        ancho_canvas = etiqueta_imagen.winfo_width()
+        alto_canvas = etiqueta_imagen.winfo_height()
+
+        x_ini_real = (xinicio / ancho_canvas)* ancho_real
+        x_fin_real = (xfin / ancho_canvas)* ancho_real
+        y_ini_real = (yinicio / alto_canvas)* alto_real
+        y_fin_real = (yfin / alto_canvas)* alto_real
+
+        arreglo = np.array(imagen_Original)
+        resultado = imglib.recorte(arreglo, x_ini_real, x_fin_real, y_ini_real, y_fin_real)
+
+        mostrar_en_etiqueta(resultado)
+
+        etiqueta_imagen.delete(rectangulo_id)
+        rectangulo_id = None
+############################## PANEL DE COLORES ##################################################
 def construir_panel_colores():
     global var_rojo, var_verde, var_azul, var_amarillo, var_celeste, var_morado, var_negativo
 
@@ -622,7 +659,36 @@ def construir_panel_sumar():
         fg="white"
     ).pack(fill="x", pady=5)
 
+############# RECORTE #######################################################################################
 
+def construir_panel_geometria():
+    global xinicio, yinicio, rectangulo_id
+
+    xinicio = None
+    yinicio = None
+    rectangulo_id = None
+
+
+    tk.Label(
+        frame_controles,
+        text= "Geometria",
+        fg= "white",
+        bg= "black",
+        font= ("arial", 16),
+    ).pack(anchor="w", pady=(0,10))
+
+    tk.Button(
+        frame_controles,
+        text= "Activar Recorte",
+        command=activar_modo_recorte,
+        bg= "gray",
+
+    ).pack(fill="x", pady=5)
+
+def activar_modo_recorte():
+    etiqueta_imagen.bind("<ButtonPress-1>", iniciar_recorte)
+    etiqueta_imagen.bind("<B1-Motion>", actualizar_recorte)
+    etiqueta_imagen.bind("<ButtonRelease-1>", finalizar_recorte)
 
 ########################ventana########################
 ventana = tk.Tk()
@@ -664,9 +730,10 @@ frame_imagen.pack(pady=(0,10))
 frame_imagen.pack_propagate(False)
 
 
-etiqueta_imagen = tk.Label(
+etiqueta_imagen = tk.Canvas(
     frame_imagen,
-    bg="black"
+    bg="black",
+    highlightthickness=0
 )   
 etiqueta_imagen.pack(fill="both",expand=True)
 

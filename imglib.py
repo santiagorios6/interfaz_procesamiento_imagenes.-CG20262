@@ -128,3 +128,17 @@ def aplicar_binarisacion(imagen, valor_umbral):
     img_bin = np.where(img_bin >= T, 255, 0).astype(np.uint8)
 
     return img_bin
+
+
+def recorte(imagen, xini, xfin, yini, yfin):
+
+    alto, ancho = imagen.shape[:2]
+
+    xini = max(0, int(xini))
+    xfin = min(ancho, int(xfin))
+    yini = max(0, int(yini))
+    yfin = min(alto, int(yfin))
+
+    return imagen[yini:yfin,xini:xfin]
+
+    
