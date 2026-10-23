@@ -5,6 +5,9 @@ from PIL import Image, ImageTk
 from matplotlib.widgets import Slider
 import numpy as np
 import imglib 
+import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 #variables Globales
 
@@ -54,7 +57,7 @@ def abrir_imagen():
     if ruta:
         imagen_Original = Image.open(ruta)
         arreglo = np.array(imagen_Original)
-        arreglo = imagen_Original.resize((300,400))
+       
         mostrar_en_etiqueta(arreglo)
 
 def abrir_imagen_sobrepocicion():
@@ -232,6 +235,43 @@ def aplicar_suma():
     resultado = imglib.suma_imagenes(arreglo_fondo, arreglo_sobre)
 
     mostrar_en_etiqueta(resultado)
+
+
+def mostrar_histograma():
+    if imagen_Original is None:
+        return
+
+    arreglo = np.array(imagen_Original)
+    R,G,B = imglib.histograma(arreglo)
+
+    fig = plt.figure(figsize=(5, 4), dpi=90)
+    ax = fig.add_subplot(111)
+    
+    ax1 = fig.add_subplot(311)
+    ax1.hist(R.ravel(), bins=256, color='red')
+    ax1.set_title('Canal Rojo', fontsize=9)
+    ax1.tick_params(labelsize=7)
+    
+    # --- Gráfico 2: Verde ---
+    ax2 = fig.add_subplot(312)
+    ax2.hist(G.ravel(), bins=256, color='green')
+    ax2.set_title('Canal Verde', fontsize=9)
+    ax2.tick_params(labelsize=7)
+    
+    # --- Gráfico 3: Azul ---
+    ax3 = fig.add_subplot(313)
+    ax3.hist(B.ravel(), bins=256, color='blue')
+    ax3.set_title('Canal Azul', fontsize=9)
+    ax3.tick_params(labelsize=7)
+
+    # Ajusta los márgenes automáticamente para que no se encimen
+    fig.tight_layout()
+
+    # 4. Lo integramos en el frame de Tkinter
+    canvas_hist = FigureCanvasTkAgg(fig, master=frame_controles)
+    canvas_hist.draw()
+    canvas_hist.get_tk_widget().pack(fill="both", expand=True)
+
 ############PANELES#########################
 
 def cambiar_categoria(evento):
@@ -254,6 +294,9 @@ def cambiar_categoria(evento):
 
     elif seleccion == "Geometria":
         construir_panel_geometria()
+
+    elif seleccion == "Histograma":
+        construir_panel_histograma()
 
 
     else:
@@ -659,6 +702,30 @@ def construir_panel_sumar():
         fg="white"
     ).pack(fill="x", pady=5)
 
+def construir_panel_histograma():
+    tk.Label(
+        frame_controles,
+        text="Histograma",
+        fg="white",
+        bg="black",
+
+    ).pack(anchor="w", pady=(0,10))
+
+    tk.Label(
+        frame_controles,
+        text="Generar Histograma",
+        fg= "silver",
+        bg="black",
+        
+    ).pack(anchor= "w", pady= (0, 15))
+
+
+    tk.Button(
+        frame_controles,
+        text= "Mostrar Histograma",
+        command= mostrar_histograma,
+        bg="gray"
+    ).pack(fill="x")
 ############# RECORTE #######################################################################################
 
 def construir_panel_geometria():

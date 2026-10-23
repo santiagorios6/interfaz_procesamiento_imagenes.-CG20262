@@ -141,4 +141,17 @@ def recorte(imagen, xini, xfin, yini, yfin):
 
     return imagen[yini:yfin,xini:xfin]
 
+
+def histograma(imagen):
+
+    if imagen.max() <= 1.0:
+        imagen = (imagen * 255).astype(np.uint8)
+
+    R = imagen[:,:,0]
+    G = imagen[:,:,1]
+    B = imagen[:,:,2]
+
+    return R,G,B
+
+
     
