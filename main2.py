@@ -14,6 +14,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 imagen_Original = None
 imagen_superpocicion = None
 
+#Colores
 var_verde = None
 var_azul = None
 var_rojo = None
@@ -22,6 +23,7 @@ var_celeste = None
 var_morado = None
 var_brillo = None
 var_negativo = None
+#Brillo
 var_brillo_canal_rojo = None
 var_brillo_canal_verde = None
 var_brillo_canal_azul = None
@@ -29,10 +31,17 @@ var_gris_promedio = None
 var_gris_midgray = None
 var_gris_luminosidad = None 
 var_umbral = None
+#Recorte
 xinicio = None 
 yinicio = None
 rectangulo_id = None
-
+#Zoom
+var_zoom = None
+zoom_actual = 1.0
+offset_x = 0
+offset_y = 0
+imagen_zoom_actual = None
+#Reduccion de Resolucion
 ###############Funciones#############################
 
 def mostrar_en_etiqueta(arreglo):
@@ -272,6 +281,63 @@ def mostrar_histograma():
     canvas_hist.draw()
     canvas_hist.get_tk_widget().pack(fill="both", expand=True)
 
+def actualizar_zoom():
+    global imagen_zoom_actual, offset_x, offset_y
+
+    if imagen_zoom_actual is None:
+        return
+
+    img_pil = Image.fromarray(imagen_zoom_actual)
+    img_tk = ImageTk.PhotoImage(img_pil)
+
+
+    etiqueta_imagen.delete("all")
+    etiqueta_imagen.create_image(offset_x, offset_y, anchor="nw", image=img_tk)
+    etiqueta_imagen.image= img_tk
+
+def aplicar_zoom_slider():
+    global imagen_zoom_actual, zoom_actual, offset_x, offset_y
+
+    if imagen_Original is None:
+        return
+
+    zoom_actual = var_zoom.get()
+
+    arreglo = np.array(imagen_Original)
+    resultado = imglib.zoom(arreglo, zoom_actual)
+    imagen_zoom_actual = resultado
+
+
+    offset_x = 0
+    offset_y = 0 
+    actualizar_zoom()
+
+def mover_imagen(dx, dy):
+    global offset_x, offset_y
+
+    if imagen_zoom_actual is None:
+        return
+
+    offset_x += dx
+    offset_y += dy
+    actualizar_zoom()
+
+def resetear_zoom():
+    global offset_x, offset_y
+
+    offset_y = 0
+    offset_x = 0
+    actualizar_zoom()
+
+def aplicar_reduccion(factor):
+    if imagen_Original is None:
+        return
+
+    arreglo = np.array(imagen_Original)
+    resultado = imglib.reduccion_resolucion(arreglo, factor)
+
+    mostrar_en_etiqueta(resultado)
+
 ############PANELES#########################
 
 def cambiar_categoria(evento):
@@ -328,6 +394,7 @@ def actualizar_recorte(evento):
     global rectangulo_id
     if rectangulo_id is not None:
         etiqueta_imagen.coords(rectangulo_id, xinicio, yinicio, evento.x, evento.y)
+
 
 def finalizar_recorte(evento):
     global xinicio, yinicio, rectangulo_id
@@ -702,6 +769,7 @@ def construir_panel_sumar():
         fg="white"
     ).pack(fill="x", pady=5)
 
+
 def construir_panel_histograma():
     tk.Label(
         frame_controles,
@@ -726,6 +794,7 @@ def construir_panel_histograma():
         command= mostrar_histograma,
         bg="gray"
     ).pack(fill="x")
+
 ############# RECORTE #######################################################################################
 
 def construir_panel_geometria():
@@ -752,10 +821,123 @@ def construir_panel_geometria():
 
     ).pack(fill="x", pady=5)
 
+    construir_zoom()
+    reduccion_resolucion()
+    
+
 def activar_modo_recorte():
     etiqueta_imagen.bind("<ButtonPress-1>", iniciar_recorte)
     etiqueta_imagen.bind("<B1-Motion>", actualizar_recorte)
     etiqueta_imagen.bind("<ButtonRelease-1>", finalizar_recorte)
+
+def construir_zoom():
+    global var_zoom
+    if var_zoom is None:
+        var_zoom = tk.DoubleVar(value= 100.0)
+
+    tk.Label(
+        frame_controles,
+        text="ZOOM",
+        fg="white",
+        bg="black",
+        font= ("arial", 12)
+    ).pack(anchor= "w", pady= (0,5))
+
+    tk.Scale(
+        frame_controles,
+        from_= 0.1,
+        to= 3.0,
+        resolution= 0.1,
+        orient= "horizontal",
+        variable= var_zoom,
+        command= lambda x: aplicar_zoom_slider(),
+        bg= "black",
+        highlightbackground= "green",
+
+    ).pack(fill= "x")
+
+
+    #controles
+
+    frame_mover = tk.Frame(
+        frame_controles,
+        bg="black",
+
+    )
+    frame_mover.pack(pady= 5)
+
+    tk.Button(
+        frame_mover,
+        text= "Arriba",
+        command= lambda:mover_imagen(0,-30),
+        width= 3,
+
+    ).grid(row= 0, column= 1)
+
+    tk.Button(
+            frame_mover,
+            text= "Izq",
+            command= lambda:mover_imagen(-30, 0),
+            width= 3,
+    
+        ).grid(row= 1, column= 0)
+
+    tk.Button(
+            frame_mover,
+            text= "reset",
+            command= lambda:resetear_zoom(),
+            width= 5,
+    
+        ).grid(row= 1, column= 1)
+
+    tk.Button(
+            frame_mover,
+            text= "Derecha",
+            command= lambda:mover_imagen(30,0),
+            width= 3,
+    
+        ).grid(row= 1, column= 2)
+    
+    tk.Button(
+            frame_mover,
+            text= "Abajo",
+            command= lambda:mover_imagen(0, 30),
+            width= 3,
+    
+        ).grid(row= 2, column= 1)
+
+
+    tk.Frame(
+        frame_controles,
+        height=2,
+        bg= "gray",
+
+    ).pack(fill= "x", pady=10)
+
+def reduccion_resolucion():
+
+    if imagen_Original is None:
+        return
+    tk.Label(
+        frame_controles,
+        text="Reducción de Resolución", 
+        fg="white", bg="black", 
+        font=("arial", 12, "bold")
+    ).pack(anchor="w", pady=(0, 5))
+
+    tk.Button(
+        frame_controles, 
+        text="Reducir a la Mitad", 
+        command=lambda: aplicar_reduccion(2), 
+        bg="gray"
+    ).pack(fill="x", pady=2)
+
+    tk.Button(
+        frame_controles, 
+        text="Reducir a un Tercio", 
+        command=lambda: aplicar_reduccion(3), 
+        bg="gray"
+    ).pack(fill="x", pady=2)
 
 ########################ventana########################
 ventana = tk.Tk()

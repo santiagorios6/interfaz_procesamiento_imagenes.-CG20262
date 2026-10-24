@@ -153,5 +153,39 @@ def histograma(imagen):
 
     return R,G,B
 
+def reduccion_resolucion(imagen, valordereduccion):
+    f = int(max(1, valordereduccion))
+
+    img_reducida = imagen[::f, ::f]
+
+    return img_reducida
+
+
+def zoom(imagen, valor_zoom):
+
+    h, w = imagen.shape[:2]
+
+    zoom_area = int(valor_zoom)
+
+    start_row = h // 2 - zoom_area // 2
+    end_row = h // 2 + zoom_area // 2
+    start_colum = w // 2 - zoom_area // 2
+    end_colum = w // 2 +zoom_area //2
+
+
+    recorte = imagen[start_row:end_row, start_colum:end_colum]
+
+    zoom_factor = 5 
+
+    zoomed = np.kron(recorte, np.ones((zoom_factor, zoom_factor, 1)))
+
+    zoomed = zoomed.astype(imagen.dtype)
+
+    return 
+
+
+
+
+
 
     
