@@ -44,7 +44,7 @@ imagen_zoom_actual = None
 #Reduccion de Resolucio
 var_reduccion = None
 #rotacion
-var_rotacion = None
+angulo_actual = 0
 
 ###############Funciones#############################
 
@@ -344,14 +344,15 @@ def aplicar_reduccion():
 
     mostrar_en_etiqueta(resultado)
 
-def aplicar_rotacion(angulo):
+def aplicar_rotacion(delta_angulo):
+    global angulo_actual
     if imagen_Original is None:
         return
 
-    
+    angulo_actual += delta_angulo
     arreglo = np.array(imagen_Original)
 
-    resultado = imglib.rotar_manual(arreglo, angulo, fondo = 0)
+    resultado = imglib.rotar_manual(arreglo, angulo_actual, fondo = 0)
 
     mostrar_en_etiqueta(resultado)
 ############PANELES#########################
@@ -998,15 +999,15 @@ def rotacion():
     tk.Button(
         frame_botones_rot, 
         text="⬅ Girar Izquierda", 
-        command=lambda: aplicar_rotacion(90), 
+        command=lambda: aplicar_rotacion(-90), 
         bg="gray"
     ).pack(side="left", expand=True, fill="x", padx=2)
 
     
     tk.Button(
         frame_botones_rot, 
-        text="Girar Derecha ➡", 
-        command=lambda: aplicar_rotacion(-90), 
+        text="Girar Derecha ", 
+        command=lambda: aplicar_rotacion(90), 
         bg="gray"
     ).pack(side="left", expand=True, fill="x", padx=2)
 
