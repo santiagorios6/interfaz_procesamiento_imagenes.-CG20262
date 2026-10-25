@@ -58,6 +58,17 @@ def mostrar_en_etiqueta(arreglo):
     etiqueta_imagen.image = imagen_tk
 
 
+def mostrar_sin_estirar(arreglo):
+    
+    imagen_resultado = Image.fromarray(arreglo)
+    imagen_tk = ImageTk.PhotoImage(imagen_resultado)
+    
+    etiqueta_imagen.delete("all")
+   
+    etiqueta_imagen.create_image(200, 200, anchor="center", image=imagen_tk)
+    etiqueta_imagen.image = imagen_tk
+
+
 def abrir_imagen():
 
     global imagen_Original
@@ -286,53 +297,6 @@ def mostrar_histograma():
     canvas_hist.draw()
     canvas_hist.get_tk_widget().pack(fill="both", expand=True)
 
-def actualizar_zoom():
-    global imagen_zoom_actual, offset_x, offset_y
-
-    if imagen_zoom_actual is None:
-        return
-
-    img_pil = Image.fromarray(imagen_zoom_actual)
-    img_tk = ImageTk.PhotoImage(img_pil)
-
-
-    etiqueta_imagen.delete("all")
-    etiqueta_imagen.create_image(offset_x, offset_y, anchor="nw", image=img_tk)
-    etiqueta_imagen.image= img_tk
-
-def aplicar_zoom_slider():
-    global imagen_zoom_actual, zoom_actual, offset_x, offset_y
-
-    if imagen_Original is None:
-        return
-
-    zoom_actual = var_zoom.get()
-
-    arreglo = np.array(imagen_Original)
-    resultado = imglib.zoom(arreglo, zoom_actual)
-    imagen_zoom_actual = resultado
-
-
-    offset_x = 0
-    offset_y = 0 
-    actualizar_zoom()
-
-def mover_imagen(dx, dy):
-    global offset_x, offset_y
-
-    if imagen_zoom_actual is None:
-        return
-
-    offset_x += dx
-    offset_y += dy
-    actualizar_zoom()
-
-def resetear_zoom():
-    global offset_x, offset_y
-
-    offset_y = 0
-    offset_x = 0
-    actualizar_zoom()
 
 def aplicar_reduccion():
     if imagen_Original is None:
@@ -391,6 +355,7 @@ def cambiar_categoria(evento):
             font=("arial", 14)
         ).pack(pady=50)
 
+
 def iniciar_recorte(evento):
     global xinicio, yinicio, rectangulo_id
 
@@ -436,10 +401,12 @@ def finalizar_recorte(evento):
         arreglo = np.array(imagen_Original)
         resultado = imglib.recorte(arreglo, x_ini_real, x_fin_real, y_ini_real, y_fin_real)
 
-        mostrar_en_etiqueta(resultado)
+        mostrar_sin_estirar(resultado)
 
         etiqueta_imagen.delete(rectangulo_id)
         rectangulo_id = None
+
+
 ############################## PANEL DE COLORES ##################################################
 def construir_panel_colores():
     global var_rojo, var_verde, var_azul, var_amarillo, var_celeste, var_morado, var_negativo
@@ -847,7 +814,7 @@ def construir_panel_geometria():
 
     ).pack(fill="x", pady=5)
 
-    construir_zoom()
+    zoom()
     reduccion_resolucion()
     rotacion()
     
@@ -857,89 +824,72 @@ def activar_modo_recorte():
     etiqueta_imagen.bind("<B1-Motion>", actualizar_recorte)
     etiqueta_imagen.bind("<ButtonRelease-1>", finalizar_recorte)
 
-def construir_zoom():
-    global var_zoom
-    if var_zoom is None:
-        var_zoom = tk.DoubleVar(value= 100.0)
 
+def activar_modo_zoom():
+    global accion_actual
+    accion_actual = "zoom"
+    etiqueta_imagen.bind("<ButtonPress-1>", iniciar_recorte)
+    etiqueta_imagen.bind("<B1-Motion>", actualizar_recorte)
+    etiqueta_imagen.bind("<ButtonRelease-1>", finalizar_zoom) 
+    
+
+
+def finalizar_zoom(evento):
+    global xinicio, yinicio, rectangulo_id
+
+    if xinicio is None or yinicio is None:
+        return
+
+    xfin = evento.x
+    yfin = evento.y
+
+    if imagen_Original is not None:
+        ancho_real, alto_real = imagen_Original.size
+        ancho_canvas = etiqueta_imagen.winfo_width()
+        alto_canvas = etiqueta_imagen.winfo_height()
+
+   
+        x_ini_real = (xinicio / ancho_canvas) * ancho_real
+        x_fin_real = (xfin / ancho_canvas) * ancho_real
+        y_ini_real = (yinicio / alto_canvas) * alto_real
+        y_fin_real = (yfin / alto_canvas) * alto_real
+
+        arreglo = np.array(imagen_Original)
+        
+    
+        img_pil = Image.fromarray(arreglo)
+        zona_seleccionada = img_pil.crop((x_ini_real, y_ini_real, x_fin_real, y_fin_real))
+        
+    
+        zona_zoom = zona_seleccionada.resize((400, 400), Image.Resampling.LANCZOS)
+        
+       
+        imagen_tk = ImageTk.PhotoImage(zona_zoom)
+        etiqueta_imagen.delete("all")
+        etiqueta_imagen.create_image(200, 200, anchor="center", image=imagen_tk)
+        etiqueta_imagen.image = imagen_tk
+
+      
+        etiqueta_imagen.delete(rectangulo_id)
+        rectangulo_id = None
+
+def zoom():
+    tk.Frame(frame_controles, height=2, bg="gray").pack(fill="x", pady=10)
+    
     tk.Label(
         frame_controles,
-        text="ZOOM",
-        fg="white",
-        bg="black",
-        font= ("arial", 12)
-    ).pack(anchor= "w", pady= (0,5))
+        text="Zoom", 
+        fg="white", bg="black", 
+        font=("arial", 12, "bold")
+    ).pack(anchor="w", pady=(0, 5))
 
-    tk.Scale(
+    tk.Button(
         frame_controles,
-        from_= 10,
-        to= 300,
-        resolution= 10,
-        orient= "horizontal",
-        variable= var_zoom,
-        command= lambda x: aplicar_zoom_slider(),
-        bg= "black",
-        highlightbackground= "green",
+        text="🔍 Activar Zoom (Seleccionar zona)",
+        command=activar_modo_zoom,
+        bg="gray"
+    ).pack(fill="x", pady=5)
 
-    ).pack(fill= "x")
-
-
-    #controles
-
-    frame_mover = tk.Frame(
-        frame_controles,
-        bg="black",
-
-    )
-    frame_mover.pack(pady= 5)
-
-    tk.Button(
-        frame_mover,
-        text= "Arriba",
-        command= lambda:mover_imagen(0,-30),
-        width= 3,
-
-    ).grid(row= 0, column= 1)
-
-    tk.Button(
-            frame_mover,
-            text= "Izq",
-            command= lambda:mover_imagen(-30, 0),
-            width= 3,
-    
-        ).grid(row= 1, column= 0)
-
-    tk.Button(
-            frame_mover,
-            text= "reset",
-            command= lambda:resetear_zoom(),
-            width= 5,
-    
-        ).grid(row= 1, column= 1)
-
-    tk.Button(
-            frame_mover,
-            text= "Derecha",
-            command= lambda:mover_imagen(30,0),
-            width= 3,
-    
-        ).grid(row= 1, column= 2)
-    
-    tk.Button(
-            frame_mover,
-            text= "Abajo",
-            command= lambda:mover_imagen(0, 30),
-            width= 3,
-    
-        ).grid(row= 2, column= 1)
-
-
-    tk.Frame(
-        frame_controles,
-        height=2,
-        bg= "gray",
-
-    ).pack(fill= "x", pady=10)
 
 def reduccion_resolucion():
 

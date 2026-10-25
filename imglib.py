@@ -177,7 +177,8 @@ def zoom(imagen, valor_zoom):
 
     zoom_factor = 5 
 
-    zoomed = np.kron(recorte, np.ones((zoom_factor, zoom_factor, 3)))
+    zoomed = np.repeat(recorte, zoom_factor, axis=0)
+    zoomed = np.repeat(zoomed, zoom_factor, axis=1)
 
     zoomed = zoomed.astype(imagen.dtype)
 
