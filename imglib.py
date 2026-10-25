@@ -177,15 +177,28 @@ def zoom(imagen, valor_zoom):
 
     zoom_factor = 5 
 
-    zoomed = np.kron(recorte, np.ones((zoom_factor, zoom_factor, 1)))
+    zoomed = np.kron(recorte, np.ones((zoom_factor, zoom_factor, 3)))
 
     zoomed = zoomed.astype(imagen.dtype)
 
-    return 
+    return  zoomed
 
 
 
-
+def rotar_manual(img, ang_deg, fondo=0):
+  
+    img_pil = Image.fromarray(img)
+    
+    
+    img_rotada = img_pil.rotate(
+        ang_deg, 
+        resample=Image.BICUBIC, 
+        expand=True, 
+        fillcolor=(fondo, fondo, fondo)
+    )
+    
+  
+    return np.array(img_rotada)
 
 
     

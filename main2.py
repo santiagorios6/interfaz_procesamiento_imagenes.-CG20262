@@ -41,13 +41,17 @@ zoom_actual = 1.0
 offset_x = 0
 offset_y = 0
 imagen_zoom_actual = None
-#Reduccion de Resolucion
+#Reduccion de Resolucio
+var_reduccion = None
+#rotacion
+var_rotacion = None
+
 ###############Funciones#############################
 
 def mostrar_en_etiqueta(arreglo):
     imagen_resultado = Image.fromarray(arreglo)
-    img_mostrar = imagen_resultado.resize((300,400))
-    imagen_tk = ImageTk.PhotoImage(img_mostrar)
+    imagen_resultado = imagen_resultado.resize((400, 400))
+    imagen_tk = ImageTk.PhotoImage(imagen_resultado)
 
     etiqueta_imagen.delete("all")
     etiqueta_imagen.create_image(200, 200, anchor="center", image= imagen_tk)
@@ -273,10 +277,11 @@ def mostrar_histograma():
     ax3.set_title('Canal Azul', fontsize=9)
     ax3.tick_params(labelsize=7)
 
-    # Ajusta los márgenes automáticamente para que no se encimen
-    fig.tight_layout()
 
-    # 4. Lo integramos en el frame de Tkinter
+    for widget in frame_grafico.winfo_children():
+        widget.destroy()
+
+    fig.tight_layout()
     canvas_hist = FigureCanvasTkAgg(fig, master=frame_controles)
     canvas_hist.draw()
     canvas_hist.get_tk_widget().pack(fill="both", expand=True)
@@ -329,15 +334,26 @@ def resetear_zoom():
     offset_x = 0
     actualizar_zoom()
 
-def aplicar_reduccion(factor):
+def aplicar_reduccion():
     if imagen_Original is None:
         return
 
+    factor = int(var_reduccion.get())
     arreglo = np.array(imagen_Original)
     resultado = imglib.reduccion_resolucion(arreglo, factor)
 
     mostrar_en_etiqueta(resultado)
 
+def aplicar_rotacion(angulo):
+    if imagen_Original is None:
+        return
+
+    
+    arreglo = np.array(imagen_Original)
+
+    resultado = imglib.rotar_manual(arreglo, angulo, fondo = 0)
+
+    mostrar_en_etiqueta(resultado)
 ############PANELES#########################
 
 def cambiar_categoria(evento):
@@ -771,6 +787,8 @@ def construir_panel_sumar():
 
 
 def construir_panel_histograma():
+    global frame_grafico
+
     tk.Label(
         frame_controles,
         text="Histograma",
@@ -794,6 +812,13 @@ def construir_panel_histograma():
         command= mostrar_histograma,
         bg="gray"
     ).pack(fill="x")
+
+    frame_grafico = tk.Frame(
+        frame_controles,
+        bg= "black",
+    
+    )
+    frame_grafico.pack(fill="both", expand= True)
 
 ############# RECORTE #######################################################################################
 
@@ -823,6 +848,7 @@ def construir_panel_geometria():
 
     construir_zoom()
     reduccion_resolucion()
+    rotacion()
     
 
 def activar_modo_recorte():
@@ -845,9 +871,9 @@ def construir_zoom():
 
     tk.Scale(
         frame_controles,
-        from_= 0.1,
-        to= 3.0,
-        resolution= 0.1,
+        from_= 10,
+        to= 300,
+        resolution= 10,
         orient= "horizontal",
         variable= var_zoom,
         command= lambda x: aplicar_zoom_slider(),
@@ -916,28 +942,73 @@ def construir_zoom():
 
 def reduccion_resolucion():
 
-    if imagen_Original is None:
-        return
+    global var_reduccion
+
+    if var_reduccion is None:
+        var_reduccion = tk.DoubleVar(value= 1.0)
+        
     tk.Label(
         frame_controles,
         text="Reducción de Resolución", 
+        fg="white", 
+        bg="black", 
+        font=("arial", 12, "bold")
+    ).pack(anchor="w", pady=(0, 5))
+
+    tk.Scale(
+        frame_controles,
+        from_= 1,
+        to= 30,
+        resolution= 1,
+        orient= "horizontal",
+        variable= var_reduccion,
+        command= lambda x: aplicar_reduccion(),
+        bg= "black",
+        highlightbackground="gray",
+
+    ).pack(fill="x")
+
+    tk.Label(
+        frame_controles,
+        text="(1 = Normal, 10 = Muy pequeña)",
+        fg="gray", bg="black",
+        font=("arial", 9),
+    ).pack(anchor="w")
+
+
+def rotacion():
+    tk.Frame(
+        
+        frame_controles, 
+        height=2, 
+        bg="gray"
+        ).pack(fill="x", pady=10)
+    
+    tk.Label(
+        frame_controles,
+        text="Rotación", 
         fg="white", bg="black", 
         font=("arial", 12, "bold")
     ).pack(anchor="w", pady=(0, 5))
 
-    tk.Button(
-        frame_controles, 
-        text="Reducir a la Mitad", 
-        command=lambda: aplicar_reduccion(2), 
-        bg="gray"
-    ).pack(fill="x", pady=2)
+    frame_botones_rot = tk.Frame(frame_controles, bg="black")
+    frame_botones_rot.pack(fill="x", pady=5)
 
+    
     tk.Button(
-        frame_controles, 
-        text="Reducir a un Tercio", 
-        command=lambda: aplicar_reduccion(3), 
+        frame_botones_rot, 
+        text="⬅ Girar Izquierda", 
+        command=lambda: aplicar_rotacion(90), 
         bg="gray"
-    ).pack(fill="x", pady=2)
+    ).pack(side="left", expand=True, fill="x", padx=2)
+
+    
+    tk.Button(
+        frame_botones_rot, 
+        text="Girar Derecha ➡", 
+        command=lambda: aplicar_rotacion(-90), 
+        bg="gray"
+    ).pack(side="left", expand=True, fill="x", padx=2)
 
 ########################ventana########################
 ventana = tk.Tk()
