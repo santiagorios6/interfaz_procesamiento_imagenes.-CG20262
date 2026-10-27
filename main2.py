@@ -885,7 +885,7 @@ def zoom():
 
     tk.Button(
         frame_controles,
-        text="🔍 Activar Zoom (Seleccionar zona)",
+        text=" Activar Zoom ",
         command=activar_modo_zoom,
         bg="gray"
     ).pack(fill="x", pady=5)
@@ -964,7 +964,7 @@ def rotacion():
 ########################ventana########################
 ventana = tk.Tk()
 
-ventana.title("Copia barata de Photoshop je je je")
+ventana.title("interfaz procesamiento imagenes")
 ventana.geometry("1000x650")
 ventana.configure(bg= "black")
 ventana.resizable(True, True)
