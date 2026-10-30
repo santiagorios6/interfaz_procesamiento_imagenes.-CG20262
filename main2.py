@@ -84,6 +84,7 @@ def abrir_imagen():
        
         mostrar_en_etiqueta(arreglo)
 
+
 def abrir_imagen_sobrepocicion():
     global imagen_superpocicion
     ruta = filedialog.askopenfilename(
@@ -254,8 +255,11 @@ def aplicar_suma():
         messagebox.showwarning("Faltan Imagenes", "debes cargar la imagen principal y la imagen a sumar")
         return
 
-    arreglo_fondo = np.array(imagen_Original)
-    arreglo_sobre = np.array(imagen_superpocicion)
+    img_fondo = imagen_Original.convert("RGB")
+    img_sobre = imagen_superpocicion.convert("RGB")
+
+    arreglo_fondo = np.array(img_fondo)
+    arreglo_sobre = np.array(img_sobre)
     resultado = imglib.suma_imagenes(arreglo_fondo, arreglo_sobre)
 
     mostrar_en_etiqueta(resultado)
@@ -276,13 +280,13 @@ def mostrar_histograma():
     ax1.set_title('Canal Rojo', fontsize=9)
     ax1.tick_params(labelsize=7)
     
-    # --- Gráfico 2: Verde ---
+    
     ax2 = fig.add_subplot(312)
     ax2.hist(G.ravel(), bins=256, color='green')
     ax2.set_title('Canal Verde', fontsize=9)
     ax2.tick_params(labelsize=7)
     
-    # --- Gráfico 3: Azul ---
+   
     ax3 = fig.add_subplot(313)
     ax3.hist(B.ravel(), bins=256, color='blue')
     ax3.set_title('Canal Azul', fontsize=9)
@@ -319,6 +323,7 @@ def aplicar_rotacion(delta_angulo):
     resultado = imglib.rotar_manual(arreglo, angulo_actual, fondo = 0)
 
     mostrar_en_etiqueta(resultado)
+    
 ############PANELES#########################
 
 def cambiar_categoria(evento):
@@ -788,7 +793,7 @@ def construir_panel_histograma():
     )
     frame_grafico.pack(fill="both", expand= True)
 
-############# RECORTE #######################################################################################
+############# Geometria eo#######################################################################################
 
 def construir_panel_geometria():
     global xinicio, yinicio, rectangulo_id
@@ -833,7 +838,6 @@ def activar_modo_zoom():
     etiqueta_imagen.bind("<ButtonRelease-1>", finalizar_zoom) 
     
 
-
 def finalizar_zoom(evento):
     global xinicio, yinicio, rectangulo_id
 
@@ -872,6 +876,7 @@ def finalizar_zoom(evento):
       
         etiqueta_imagen.delete(rectangulo_id)
         rectangulo_id = None
+
 
 def zoom():
     tk.Frame(frame_controles, height=2, bg="gray").pack(fill="x", pady=10)
@@ -921,7 +926,7 @@ def reduccion_resolucion():
 
     tk.Label(
         frame_controles,
-        text="(1 = Normal, 10 = Muy pequeña)",
+        text="REDUCCION",
         fg="gray", bg="black",
         font=("arial", 9),
     ).pack(anchor="w")

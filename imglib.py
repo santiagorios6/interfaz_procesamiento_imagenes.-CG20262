@@ -46,8 +46,8 @@ def suma_imagenes(img_fondo, img_sobrepuesta):
     h, w = img_fondo.shape[:2]
     img_sobrepuesta = np.array(Image.fromarray(img_sobrepuesta).resize((w, h)))
 
-    A = img_fondo.astype(np.uint16)
-    B = img_sobrepuesta.astype(np.uint16)
+    A = img_fondo.astype(np.float32)
+    B = img_sobrepuesta.astype(np.float32)
 
     fusion = (A + B)/2
     fusion = np.clip(fusion, 0, 255).astype(np.uint8)
